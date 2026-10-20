@@ -1,0 +1,12 @@
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Frontend and Python build output
+node_modules/
+frontend/dist/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
