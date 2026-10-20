@@ -1,0 +1,65 @@
+from google import genai
+from google.genai import types
+from pydantic import BaseModel, Field
+from .prompts import SYSTEM_PROMPT  # Imports your expert strategist system prompt
+
+# 1. Define the output schema using Pydantic
+class CaptionResponse(BaseModel):
+    linkedin: str = Field(description="Professional, insightful caption with key takeaways.")
+    instagram: str = Field(description="Casual, visual caption with emojis and relevant hashtags.")
+    x: str = Field(description="Punchy, concise caption under 280 characters.")
+
+# 2. Function to invoke Gemini
+def call_gemini_captions(image_bytes: bytes, user_context: str) -> CaptionResponse:
+    client = genai.Client()
+    
+    # Define dynamic user prompt content
+    user_prompt = f"User Context: '{user_context}'"
+
+    # Call the model enforcing system instructions and structured JSON output
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+            user_prompt
+        ],
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,          # Enforces the role and guidelines globally
+            response_mime_type="application/json",     # Forces JSON response format
+            response_schema=CaptionResponse,           # Enforces structure matching Pydantic
+            temperature=0.7,
+        ),
+    )
+
+    # The SDK automatically parses the response into your Pydantic model
+    return response.parsed
+
+
+# 3. Validation Wrapper with Post-Generation Checks
+def get_validated_captions(image_bytes: bytes, user_context: str) -> dict:
+    try:
+        # Call Gemini
+        parsed_response: CaptionResponse = call_gemini_captions(image_bytes, user_context)
+        
+        # Verify the parsing succeeded
+        if not parsed_response:
+            raise ValueError("Model failed to produce valid structured output.")
+
+        # Convert Pydantic model to dictionary for post-processing
+        captions_dict = parsed_response.model_dump()
+
+        # Enforce strict post-generation checks (e.g., X character limit guardrail)
+        if len(captions_dict["x"]) > 280:
+            captions_dict["x"] = captions_dict["x"][:277] + "..."
+
+        return {
+            "success": True,
+            "data": captions_dict
+        }
+
+    except Exception as e:
+        # Catch API errors, network failures, or schema parsing errors
+        return {
+            "success": False,
+            "error": str(e)
+        }
