@@ -1,0 +1,28 @@
+# Local environment files
+**/.env
+**/.env.*
+!**/.env.example
+**/.envrc
+
+# Credential files and private keys
+**/credentials.json
+**/service-account*.json
+**/*service-account*.json
+**/service_account*.json
+**/secrets.json
+**/secrets.yaml
+**/secrets.yml
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
+
+# Generated files
+**/__pycache__/
+*.py[cod]
+**/node_modules/
+**/dist/
