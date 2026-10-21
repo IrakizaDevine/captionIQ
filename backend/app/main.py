@@ -11,7 +11,7 @@ app = FastAPI(title="Caption IQ API")
 app.add_exception_handler(ApiError, api_error_handler)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.allowed_origin],
+    allow_origins=list(settings.allowed_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

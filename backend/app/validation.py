@@ -9,7 +9,7 @@ SUPPORTED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 SUPPORTED_FORMATS = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
 
 
-def validate_upload(filename: str | None, content_type: str | None, data: bytes, settings: Settings) -> str:
+def validate_upload(content_type: str | None, data: bytes, settings: Settings) -> str:
     if len(data) > settings.max_upload_bytes:
         raise ApiError(
             "FILE_TOO_LARGE",

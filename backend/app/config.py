@@ -35,7 +35,7 @@ class Settings:
     max_upload_mb: int
     max_context_chars: int
     gemini_timeout_seconds: float
-    allowed_origin: str
+    allowed_origins: tuple[str, ...]
 
     @property
     def max_upload_bytes(self) -> int:
@@ -45,9 +45,13 @@ class Settings:
 def get_settings() -> Settings:
     return Settings(
         gemini_api_key=os.getenv("GEMINI_API_KEY"),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         max_upload_mb=_positive_int("MAX_UPLOAD_MB", 5),
         max_context_chars=_positive_int("MAX_CONTEXT_CHARS", 300),
         gemini_timeout_seconds=_positive_float("GEMINI_TIMEOUT_SECONDS", 30),
-        allowed_origin=os.getenv("ALLOWED_ORIGIN", "http://localhost:5173"),
+        allowed_origins=tuple(
+            origin.strip()
+            for origin in os.getenv("ALLOWED_ORIGIN", "http://localhost:5173").split(",")
+            if origin.strip()
+        ),
     )

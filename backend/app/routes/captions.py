@@ -15,7 +15,7 @@ async def create_captions(
 ) -> CaptionsResponse:
     settings = get_settings()
     data = await photo.read()
-    mime_type = validate_upload(photo.filename, photo.content_type, data, settings)
+    mime_type = validate_upload(photo.content_type, data, settings)
     clean_context = validate_context(context, settings)
     captions = generate_captions(data, mime_type, clean_context, settings)
     return CaptionsResponse(captions=captions)
