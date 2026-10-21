@@ -1,3 +1,5 @@
+import logging
+
 from google import genai
 from google.genai import types
 
@@ -5,6 +7,8 @@ from ..config import Settings
 from ..errors import ApiError
 from .caption_parser import parse_captions
 from .prompts import build_prompt
+
+logger = logging.getLogger(__name__)
 
 
 def generate_captions(data: bytes, mime_type: str, context: str, settings: Settings):
@@ -31,9 +35,16 @@ def generate_captions(data: bytes, mime_type: str, context: str, settings: Setti
     except ApiError:
         raise
     except Exception as exc:
+        logger.exception("Gemini request failed using model %s", settings.gemini_model)
         message = str(exc).lower()
         if "429" in message or "rate" in message and "limit" in message:
             raise ApiError("RATE_LIMITED", "The AI service rate limit was reached.", 429) from exc
+        if getattr(exc, "code", None) == 503 or "503 unavailable" in message:
+            raise ApiError(
+                "AI_SERVICE_UNAVAILABLE",
+                "The AI service is temporarily busy. Please try again shortly.",
+                503,
+            ) from exc
         raise ApiError("AI_SERVICE_ERROR", "The AI service could not generate captions.", 502) from exc
 
     if not text:

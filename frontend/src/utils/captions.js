@@ -1,0 +1,1 @@
+export const captions = ['At church', 'New job', 'Career reflection']
